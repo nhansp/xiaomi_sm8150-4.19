@@ -190,5 +190,6 @@ obj-$(CONFIG_MULTIPLEXER)	+= mux/
 obj-$(CONFIG_ESOC)              += esoc/
 obj-$(CONFIG_UNISYS_VISORBUS)	+= visorbus/
 obj-$(CONFIG_SIOX)		+= siox/
+obj-$(CONFIG_HALLS)		+= halls/
 obj-$(CONFIG_GNSS)		+= gnss/
 obj-$(CONFIG_SENSORS_SSC)	+= sensors/
