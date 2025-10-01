@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
  * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
@@ -20,8 +20,6 @@
 #include <asm/dma.h>
 #include <dsp/msm_audio_ion.h>
 #include <dsp/q6voice.h>
-
-#define DRV_NAME "msm-pcm-host-voice-v2"
 
 #define HPCM_MAX_Q_LEN 2
 #define HPCM_MIN_VOC_PKT_SIZE 320
@@ -663,11 +661,6 @@ static void hpcm_copy_playback_data_from_queue(struct dai_data *dai_data,
 				struct hpcm_buf_node, list);
 		list_del(&buf_node->list);
 		*len = buf_node->frame.len;
-		if (*len > HPCM_MAX_VOC_PKT_SIZE) {
-			pr_err("%s: Playback data len %d overflow\n",
-					__func__, *len);
-			return;
-		}
 		memcpy((u8 *)dai_data->vocpcm_ion_buffer.kvaddr,
 		       &buf_node->frame.voc_pkt[0],
 		       buf_node->frame.len);
@@ -694,12 +687,6 @@ static void hpcm_copy_capture_data_to_queue(struct dai_data *dai_data,
 
 	if (dai_data->substream == NULL)
 		return;
-
-	if (len > HPCM_MAX_VOC_PKT_SIZE) {
-		pr_err("%s: Copy capture data len %d overflow\n",
-			__func__, len);
-		return;
-	}
 
 	/* Copy out buffer packet into free_queue */
 	spin_lock_irqsave(&dai_data->dsp_lock, dsp_flags);
@@ -1462,16 +1449,15 @@ static int msm_asoc_pcm_new(struct snd_soc_pcm_runtime *rtd)
 	return 0;
 }
 
-static int msm_pcm_hpcm_probe(struct snd_soc_component *component)
+static int msm_pcm_hpcm_probe(struct snd_soc_platform *platform)
 {
-	snd_soc_add_component_controls(component, msm_hpcm_controls,
+	snd_soc_add_platform_controls(platform, msm_hpcm_controls,
 				ARRAY_SIZE(msm_hpcm_controls));
 
 	return 0;
 }
 
-static struct snd_soc_component_driver msm_soc_component = {
-	.name		= DRV_NAME,
+static struct snd_soc_platform_driver msm_soc_platform = {
 	.ops		= &msm_pcm_ops,
 	.pcm_new	= msm_asoc_pcm_new,
 	.probe		= msm_pcm_hpcm_probe,
@@ -1481,13 +1467,12 @@ static int msm_pcm_probe(struct platform_device *pdev)
 {
 
 	pr_info("%s: dev name %s\n", __func__, dev_name(&pdev->dev));
-	return snd_soc_register_component(&pdev->dev, &msm_soc_component,
-					  NULL, 0);
+	return snd_soc_register_platform(&pdev->dev, &msm_soc_platform);
 }
 
 static int msm_pcm_remove(struct platform_device *pdev)
 {
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_unregister_platform(&pdev->dev);
 	return 0;
 }
 
@@ -1502,7 +1487,6 @@ static struct platform_driver msm_pcm_driver = {
 		.name = "msm-voice-host-pcm",
 		.owner = THIS_MODULE,
 		.of_match_table = msm_voice_host_pcm_dt_match,
-		.suppress_bind_attrs = true,
 	},
 	.probe = msm_pcm_probe,
 	.remove = msm_pcm_remove,

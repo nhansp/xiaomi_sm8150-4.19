@@ -1,6 +1,15 @@
-// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2010-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
  */
 #include <linux/module.h>
 #include <linux/fs.h>
@@ -241,9 +250,8 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		 */
 		if (min_bitrate > 24000)
 			min_bitrate = 24000;
-		max_bitrate = 6*(cfg->sample_rate)*(cfg->channels);
-		if (max_bitrate > 192000)
-			max_bitrate = 192000;
+		/* Set max_bitrate to the highest possible value */
+		max_bitrate = 384000;
 		if ((cfg->bit_rate < min_bitrate) ||
 			(cfg->bit_rate > max_bitrate)) {
 			pr_err("%s: bitrate permissible: max=%d, min=%d\n",

@@ -1,6 +1,14 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
  */
 #include <linux/mutex.h>
 #include <linux/wait.h>
@@ -306,7 +314,7 @@ struct us_client *q6usm_us_client_alloc(
 	if (usc == NULL)
 		return NULL;
 
-	p_mem_handle = kzalloc(sizeof(uint32_t) * 4, GFP_KERNEL);
+	p_mem_handle = kcalloc(4, sizeof(uint32_t), GFP_KERNEL);
 	if (p_mem_handle == NULL) {
 		kfree(usc);
 		return NULL;

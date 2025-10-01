@@ -1,6 +1,14 @@
-// SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
+ *
  * Copyright (c) 2023, Qualcomm Innovation Center, Inc. All rights reserved.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 #include <linux/init.h>
@@ -23,8 +31,6 @@
 
 #include "msm-pcm-q6-v2.h"
 #include "msm-pcm-routing-v2.h"
-
-#define DRV_NAME "msm-pcm-voip-v2"
 
 #define SHARED_MEM_BUF 2
 #define VOIP_MAX_Q_LEN 10
@@ -303,9 +309,9 @@ static struct snd_kcontrol_new msm_voip_controls[] = {
 		       msm_voip_dtx_mode_get, msm_voip_dtx_mode_put),
 };
 
-static int msm_pcm_voip_probe(struct snd_soc_component *component)
+static int msm_pcm_voip_probe(struct snd_soc_platform *platform)
 {
-	snd_soc_add_component_controls(component, msm_voip_controls,
+	snd_soc_add_platform_controls(platform, msm_voip_controls,
 					ARRAY_SIZE(msm_voip_controls));
 
 	return 0;
@@ -373,6 +379,7 @@ static void voip_process_ul_pkt(uint8_t *voc_pkt,
 							dsp_flags);
 				return;
 			}
+
 			/* Remove the DSP frame info header. Header format:
 			 * Bits 0-3: Frame rate
 			 * Bits 4-7: Frame type
@@ -400,6 +407,7 @@ static void voip_process_ul_pkt(uint8_t *voc_pkt,
 							dsp_flags);
 				return;
 			}
+
 			/* Remove the DSP frame info header.
 			 * Header format:
 			 * Bits 0-3: frame rate
@@ -444,6 +452,7 @@ static void voip_process_ul_pkt(uint8_t *voc_pkt,
 							dsp_flags);
 				return;
 			}
+
 			/* There are two frames in the buffer. Length of the
 			 * first frame:
 			 */
@@ -1636,8 +1645,7 @@ static int msm_asoc_pcm_new(struct snd_soc_pcm_runtime *rtd)
 	return ret;
 }
 
-static struct snd_soc_component_driver msm_soc_component = {
-	.name		= DRV_NAME,
+static struct snd_soc_platform_driver msm_soc_platform = {
 	.ops		= &msm_pcm_ops,
 	.pcm_new	= msm_asoc_pcm_new,
 	.probe		= msm_pcm_voip_probe,
@@ -1674,9 +1682,8 @@ static int msm_pcm_probe(struct platform_device *pdev)
 
 
 	pr_debug("%s: dev name %s\n", __func__, dev_name(&pdev->dev));
-	rc = snd_soc_register_component(&pdev->dev,
-				       &msm_soc_component,
-					NULL, 0);
+	rc = snd_soc_register_platform(&pdev->dev,
+				       &msm_soc_platform);
 
 done:
 	return rc;
@@ -1684,7 +1691,7 @@ done:
 
 static int msm_pcm_remove(struct platform_device *pdev)
 {
-	snd_soc_unregister_component(&pdev->dev);
+	snd_soc_unregister_platform(&pdev->dev);
 	return 0;
 }
 
@@ -1699,7 +1706,6 @@ static struct platform_driver msm_pcm_driver = {
 		.name = "msm-voip-dsp",
 		.owner = THIS_MODULE,
 		.of_match_table = msm_voip_dt_match,
-		.suppress_bind_attrs = true,
 	},
 	.probe = msm_pcm_probe,
 	.remove = msm_pcm_remove,
