@@ -27,10 +27,8 @@
 #include <net/cnss.h>
 #endif
 
-#if defined CONFIG_BT_SLIM_QCA6390 || defined CONFIG_BTFM_SLIM_WCN3990
 #include "btfm_slim.h"
 #include "btfm_slim_slave.h"
-#endif
 #include <linux/fs.h>
 
 #define BT_PWR_DBG(fmt, arg...)  pr_debug("%s: " fmt "\n", __func__, ## arg)
