@@ -126,7 +126,11 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
 	unsigned long clipped_freq = ULONG_MAX, floor_freq = 0;
 	struct cpufreq_cooling_device *cpufreq_cdev;
 
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+	if (event != CPUFREQ_THERMAL)
+#else
 	if (event != CPUFREQ_INCOMPATIBLE)
+#endif
 		return NOTIFY_DONE;
 
 	mutex_lock(&cooling_list_lock);
@@ -159,13 +163,67 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
 							clipped_freq);
 		break;
 	}
+<<<<<<< HEAD
 
+=======
+	/*
+	 * policy->max is the maximum allowed frequency defined by user
+	 * and clipped_freq is the maximum that thermal constraints
+	 * allow.
+	 *
+	 * If clipped_freq is lower than policy->max, then we need to
+	 * readjust policy->max.
+	 *
+	 * But, if clipped_freq is greater than policy->max, we don't
+	 * need to do anything.
+	 *
+	 * Similarly, if policy minimum set by the user is less than
+	 * the floor_frequency, then adjust the policy->min.
+	 */
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+	cpufreq_verify_within_limits(policy, floor_freq, clipped_freq);
+#else
+	if (policy->max > clipped_freq || policy->min < floor_freq)
+		cpufreq_verify_within_limits(policy, floor_freq, clipped_freq);
+#endif
+>>>>>>> 65e7544edb37 (drivers: thermal: Import Xiaomi changes)
 	mutex_unlock(&cooling_list_lock);
 
 	return NOTIFY_OK;
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_ENERGY_MODEL
+=======
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+void cpu_limits_set_level(unsigned int cpu, unsigned int max_freq)
+{
+	struct cpufreq_cooling_device *cpufreq_cdev;
+	struct thermal_cooling_device *cdev;
+	unsigned int cdev_cpu;
+	unsigned int level;
+
+	list_for_each_entry(cpufreq_cdev, &cpufreq_cdev_list, node) {
+		sscanf(cpufreq_cdev->cdev->type, "thermal-cpufreq-%d", &cdev_cpu);
+		if (cdev_cpu == cpu) {
+			for (level = 0; level < cpufreq_cdev->max_level; level++) {
+				int target_freq = cpufreq_cdev->freq_table[level].frequency;
+				if (max_freq >= target_freq) {
+					cdev = cpufreq_cdev->cdev;
+					if (cdev)
+						cdev->ops->set_cur_state(cdev, level);
+
+					break;
+				}
+			}
+
+			break;
+		}
+	}
+}
+#endif
+
+>>>>>>> 65e7544edb37 (drivers: thermal: Import Xiaomi changes)
 /**
  * get_level: Find the level for a particular frequency
  * @cpufreq_cdev: cpufreq_cdev for which the property is required
@@ -406,7 +464,11 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
 
 	/* Request state should be less than max_level */
 	if (WARN_ON(state > cpufreq_cdev->max_level))
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+		state = cpufreq_cdev->max_level;
+#else
 		return -EINVAL;
+#endif
 
 	/* Check if the old cooling action is same as new cooling action */
 	if (cpufreq_cdev->cpufreq_state == state)
@@ -416,6 +478,11 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
 	cpufreq_cdev->cpufreq_state = state;
 	cpufreq_cdev->clipped_freq = clip_freq;
 
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+	get_online_cpus();
+	cpufreq_update_policy(cpu);
+	put_online_cpus();
+#else
 	/* Check if the device has a platform mitigation function that
 	 * can handle the CPU freq mitigation, if not, notify cpufreq
 	 * framework.
@@ -702,7 +769,11 @@ __cpufreq_cooling_register(struct device_node *np,
 	list_add(&cpufreq_cdev->node, &cpufreq_cdev_list);
 	mutex_unlock(&cooling_list_lock);
 
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+	if (first)
+#else
 	if (first && !cpufreq_cdev->plat_ops)
+#endif
 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
 					  CPUFREQ_POLICY_NOTIFIER);
 
@@ -842,10 +913,20 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
 	mutex_unlock(&cooling_list_lock);
 
 	if (last) {
+<<<<<<< HEAD
+=======
+		unregister_pm_notifier(&cpufreq_cooling_pm_nb);
+#ifdef CONFIG_MACH_XIAOMI_SM8150
+		cpufreq_unregister_notifier(
+				&thermal_cpufreq_notifier_block,
+				CPUFREQ_POLICY_NOTIFIER);
+#else
+>>>>>>> 65e7544edb37 (drivers: thermal: Import Xiaomi changes)
 		if (!cpufreq_cdev->plat_ops)
 			cpufreq_unregister_notifier(
 					&thermal_cpufreq_notifier_block,
 					CPUFREQ_POLICY_NOTIFIER);
+#endif
 	}
 
 	thermal_cooling_device_unregister(cpufreq_cdev->cdev);
