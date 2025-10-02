@@ -160,7 +160,6 @@ static irqreturn_t nqx_dev_irq_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-#ifndef CONFIG_MACH_XIAOMI_SM8150
 static int is_data_available_for_read(struct nqx_dev *nqx_dev)
 {
 	int ret;
@@ -170,7 +169,6 @@ static int is_data_available_for_read(struct nqx_dev *nqx_dev)
 		!nqx_dev->irq_enabled, msecs_to_jiffies(MAX_IRQ_WAIT_TIME));
 	return ret;
 }
-#endif
 
 static int send_cold_reset_cmd(struct nqx_dev *nqx_dev)
 {
