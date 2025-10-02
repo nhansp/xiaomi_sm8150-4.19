@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
+ * Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) 2009-2020, The Linux Foundation. All rights reserved.
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
@@ -3291,7 +3292,7 @@ static void _sde_dbg_dump_sde_dbg_bus(struct sde_dbg_sde_debug_bus *bus)
 
 	if (in_mem) {
 		if (!(*dump_mem))
-			*dump_mem =  vzalloc(list_size);
+			*dump_mem = vzalloc(list_size);
 
 		if (*dump_mem) {
 			dump_addr = *dump_mem;
@@ -3450,7 +3451,7 @@ static void _sde_dbg_dump_vbif_dbg_bus(struct sde_dbg_vbif_debug_bus *bus)
 
 	if (in_mem) {
 		if (!(*dump_mem))
-			*dump_mem =  vzalloc(list_size);
+			*dump_mem = vzalloc(list_size);
 
 		if (*dump_mem) {
 			dump_addr = *dump_mem;

@@ -727,6 +727,7 @@ int msm_atomic_prepare_fb(struct drm_plane *plane,
 void msm_atomic_commit_tail(struct drm_atomic_state *state);
 int msm_atomic_commit(struct drm_device *dev,
 	struct drm_atomic_state *state, bool nonblock);
+int msm_drm_notifier_call_chain(unsigned long val, void *v);
 
 /* callback from wq once fence has passed: */
 struct msm_fence_cb {
@@ -1050,5 +1051,21 @@ static inline unsigned long timeout_to_jiffies(const ktime_t *timeout)
 int msm_get_mixer_count(struct msm_drm_private *priv,
 		const struct drm_display_mode *mode,
 		const struct msm_resource_caps_info *res, u32 *num_lm);
+
+#ifdef CONFIG_DRM_MSM_MODULE
+int dsi_display_register(void);
+void dsi_display_unregister(void);
+int dp_display_init(void);
+void dp_display_cleanup(void);
+int sde_rsc_rpmh_register(void);
+int sde_rsc_register(void);
+void sde_rsc_unregister(void);
+int sde_wb_register(void);
+void sde_wb_unregister(void);
+int mdss_pll_driver_init(void);
+void mdss_pll_driver_deinit(void);
+int msm_notifier_register(void);
+void msm_notifier_unregister(void);
+#endif
 
 #endif /* __MSM_DRV_H__ */

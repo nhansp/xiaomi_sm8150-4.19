@@ -106,7 +106,7 @@ enum dsi_mode_flags {
 	DSI_MODE_FLAG_VRR			= BIT(4),
 	DSI_MODE_FLAG_POMS			= BIT(5),
 	DSI_MODE_FLAG_DYN_CLK			= BIT(6),
-	DSI_MODE_FLAG_DMS_FPS                   = BIT(7),
+	DSI_MODE_FLAG_DMS_FPS			= BIT(7),
 };
 
 /**
@@ -301,6 +301,7 @@ enum dsi_cmd_set_type {
 	DSI_CMD_SET_LP1,
 	DSI_CMD_SET_LP2,
 	DSI_CMD_SET_NOLP,
+	DSI_CMD_SET_POST_NOLP,
 	DSI_CMD_SET_PPS,
 	DSI_CMD_SET_ROI,
 	DSI_CMD_SET_TIMING_SWITCH,
@@ -625,7 +626,10 @@ struct dsi_display_mode_priv_info {
 	struct msm_display_topology topology;
 	struct msm_display_dsc_info dsc;
 	bool dsc_enabled;
+	bool pps_created;
 	struct msm_roi_caps roi_caps;
+
+	void *switch_data;
 };
 
 /**

@@ -160,15 +160,6 @@ struct sde_connector_ops {
 			uint32_t event_idx, bool enable, void *display);
 
 	/**
-	 * set_backlight - set backlight level
-	 * @connector: Pointer to drm connector structure
-	 * @display: Pointer to private display structure
-	 * @bl_lvel: Backlight level
-	 */
-	int (*set_backlight)(struct drm_connector *connector,
-			void *display, u32 bl_lvl);
-
-	/**
 	 * set_colorspace - set colorspace for connector
 	 * @connector: Pointer to drm connector structure
 	 * @display: Pointer to private display structure
@@ -340,6 +331,13 @@ struct sde_connector_ops {
 		struct msm_display_conn_params *params);
 
 	/**
+	 * set_idle_hint - gives hint to display whether display is idle
+	 * @display: Pointer to private display handle
+	 * @is_idle: true if display is idle, false otherwise
+	 */
+	void (*set_idle_hint)(void *display, bool is_idle);
+
+	/**
 	 * get_qsync_min_fps - Get qsync min fps from qsync-min-fps-list
 	 * @display: Pointer to private display structure
 	 * @mode_fps: Fps value in dfps list
@@ -476,8 +474,6 @@ struct sde_connector {
 	bool bl_scale_dirty;
 	u32 bl_scale;
 	u32 bl_scale_sv;
-	u32 unset_bl_level;
-	bool allow_bl_update;
 
 	u32 qsync_mode;
 	bool qsync_updated;
@@ -862,10 +858,12 @@ static inline bool sde_connector_needs_offset(struct drm_connector *connector)
  * @state: Pointer to drm_connector_state struct
  * @cfg: Pointer to pointer to dither cfg
  * @len: length of the dither data
+ * @idle_pc: flag to indicate idle_pc_restore happened
  * Returns: Zero on success
  */
 int sde_connector_get_dither_cfg(struct drm_connector *conn,
-		struct drm_connector_state *state, void **cfg, size_t *len);
+		struct drm_connector_state *state, void **cfg,
+		size_t *len, bool idle_pc);
 
 /**
  * sde_connector_set_blob_data - set connector blob property data
@@ -951,10 +949,18 @@ void sde_connector_destroy(struct drm_connector *connector);
 int sde_connector_event_notify(struct drm_connector *connector, uint32_t type,
 		uint32_t len, uint32_t val);
 /**
- * sde_connector_helper_bridge_enable - helper function for drm bridge enable
+ * sde_connector_helper_bridge_pre_enable - helper function for drm bridge
+ *                                          pre enable
  * @connector: Pointer to DRM connector object
  */
-void sde_connector_helper_bridge_enable(struct drm_connector *connector);
+void sde_connector_helper_bridge_pre_enable(struct drm_connector *connector);
+
+/**
+ * sde_connector_helper_bridge_post_enable - helper function for drm bridge
+ *                                           post enable
+ * @connector: Pointer to DRM connector object
+ */
+void sde_connector_helper_bridge_post_enable(struct drm_connector *connector);
 
 /**
  * sde_connector_get_panel_vfp - helper to get panel vfp
@@ -965,6 +971,14 @@ void sde_connector_helper_bridge_enable(struct drm_connector *connector);
  */
 int sde_connector_get_panel_vfp(struct drm_connector *connector,
 	struct drm_display_mode *mode);
+
+/**
+ * sde_connector_set_idle_hint - helper to give idle hint to connector
+ * @connector: pointer to drm connector
+ * @is_idle: true on idle, false on wake up from idle
+ */
+void sde_connector_set_idle_hint(struct drm_connector *connector, bool is_idle);
+
 /**
  * sde_connector_esd_status - helper function to check te status
  * @connector: Pointer to DRM connector object

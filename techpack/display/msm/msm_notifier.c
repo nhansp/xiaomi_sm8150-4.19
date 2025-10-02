@@ -11,6 +11,7 @@
 #include <linux/sched.h>
 
 #include <drm/drm_panel.h>
+#include "msm_drv.h"
 #include "sde_dbg.h"
 
 struct msm_display_fps_info {
@@ -183,32 +184,34 @@ end:
 	return ret;
 }
 
-static const struct of_device_id dt_match[] = {
+static const struct of_device_id dt_match_msm_notifier[] = {
 	{ .compatible = "qcom,msm-notifier"},
 	{},
 };
 
-MODULE_DEVICE_TABLE(of, dt_match);
+MODULE_DEVICE_TABLE(of, dt_match_msm_notifier);
 
 static struct platform_driver msm_notifier_platform_driver = {
 	.probe     = msm_notifier_probe,
 	.remove    = msm_notifier_remove,
 	.driver     = {
 		.name   = "msm_notifier",
-		.of_match_table = dt_match,
+		.of_match_table = dt_match_msm_notifier,
 		.suppress_bind_attrs = true,
 	},
 };
 
-static int __init msm_notifier_register(void)
+int __init msm_notifier_register(void)
 {
 	return platform_driver_register(&msm_notifier_platform_driver);
 }
 
-static void __exit msm_notifier_unregister(void)
+void __exit msm_notifier_unregister(void)
 {
 	platform_driver_unregister(&msm_notifier_platform_driver);
 }
 
+#ifndef CONFIG_DRM_MSM_MODULE
 late_initcall(msm_notifier_register);
 module_exit(msm_notifier_unregister);
+#endif
